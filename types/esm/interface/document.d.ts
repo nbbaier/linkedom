@@ -11,6 +11,10 @@ export class Document extends NonElementParentNode implements globalThis.Documen
     get doctype(): import("../mixin/parent-node.js").NodeStruct | DocumentType;
     get documentElement(): import("../mixin/parent-node.js").NodeStruct;
     /**
+     * @type {StyleSheetList}
+     */
+    get styleSheets(): StyleSheetList;
+    /**
      * @protected
      */
     protected _getParent(): EventTarget;
@@ -46,10 +50,12 @@ export class Document extends NonElementParentNode implements globalThis.Documen
     [GLOBALS]: any;
     [IMAGE]: any;
     [UPGRADE]: any;
+    [STYLE_SHEETS]: any;
     [EVENT_TARGET]: EventTarget;
 }
 import { NonElementParentNode } from '../mixin/non-element-parent-node.js';
 import { DocumentType } from './document-type.js';
+import { StyleSheetList } from './style-sheet-list.js';
 import { EventTarget } from './event-target.js';
 import { Attr } from './attr.js';
 import { CDATASection } from './cdata-section.js';
@@ -68,4 +74,5 @@ import { DOM_PARSER } from '../shared/symbols.js';
 import { GLOBALS } from '../shared/symbols.js';
 import { IMAGE } from '../shared/symbols.js';
 import { UPGRADE } from '../shared/symbols.js';
+import { STYLE_SHEETS } from '../shared/symbols.js';
 import { EVENT_TARGET } from '../shared/symbols.js';

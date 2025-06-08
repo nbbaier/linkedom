@@ -7,6 +7,7 @@ export function DocumentType(): void;
 export function Element(): void;
 export function Node(): void;
 export function ShadowRoot(): void;
+export function StyleSheetList(): void;
 export function Text(): void;
 export function SVGElement(): void;
 export function illegalConstructor(): never;
@@ -20,6 +21,7 @@ export namespace Facades {
     export { Element };
     export { Node };
     export { ShadowRoot };
+    export { StyleSheetList };
     export { Text };
     export { SVGElement };
 }

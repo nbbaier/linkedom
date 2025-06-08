@@ -14,5 +14,11 @@ export class HTMLLinkElement extends HTMLElement implements globalThis.HTMLLinkE
     get rel(): any;
     set type(value: any);
     get type(): any;
+    /**
+     * @returns {CSSStyleSheet|null}
+     */
+    get sheet(): CSSStyleSheet;
+    [SHEET]: any;
 }
 import { HTMLElement } from './element.js';
+import { SHEET } from '../shared/symbols.js';

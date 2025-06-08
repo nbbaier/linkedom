@@ -4,7 +4,7 @@ const {performance} = require('../../commonjs/perf_hooks.cjs');
 const {DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, SVG_NAMESPACE} = require('../shared/constants.js');
 
 const {
-  CUSTOM_ELEMENTS, DOM_PARSER, GLOBALS, IMAGE, MUTATION_OBSERVER, DOCTYPE, END, NEXT, MIME, EVENT_TARGET, UPGRADE
+  CUSTOM_ELEMENTS, DOM_PARSER, GLOBALS, IMAGE, MUTATION_OBSERVER, DOCTYPE, END, NEXT, MIME, EVENT_TARGET, UPGRADE, STYLE_SHEETS
 } = require('../shared/symbols.js');
 
 const {Facades, illegalConstructor} = require('../shared/facades.js');
@@ -33,8 +33,10 @@ const {MutationObserverClass} = require('./mutation-observer.js');
 const {NamedNodeMap} = require('./named-node-map.js');
 const {NodeList} = require('./node-list.js');
 const {Range} = require('./range.js');
+const {StyleSheetList} = require('./style-sheet-list.js');
 const {Text} = require('./text.js');
 const {TreeWalker} = require('./tree-walker.js');
+const {CSSStyleDeclaration} = require('./css-style-declaration.js');
 
 const query = (method, ownerDocument, selectors) => {
   let {[NEXT]: next, [END]: end} = ownerDocument;
@@ -51,7 +53,8 @@ const globalExports = assign(
     EventTarget,
     InputEvent,
     NamedNodeMap,
-    NodeList
+    NodeList,
+    StyleSheetList
   }
 );
 
@@ -72,6 +75,7 @@ class Document extends NonElementParentNode {
     this[GLOBALS] = null;
     this[IMAGE] = null;
     this[UPGRADE] = null;
+    this[STYLE_SHEETS] = null;
   }
 
   /**
@@ -131,6 +135,27 @@ class Document extends NonElementParentNode {
               if (!this[MUTATION_OBSERVER].class)
                 this[MUTATION_OBSERVER] = new MutationObserverClass(this);
               return this[MUTATION_OBSERVER].class;
+            case 'getComputedStyle':
+              // eslint-disable-next-line no-unused-vars
+              return (element, pseudoElement) => {
+                if (!element || element.nodeType !== ELEMENT_NODE) {
+                  throw new TypeError('Failed to execute \'getComputedStyle\' on \'Window\': parameter 1 is not of type \'Element\'.');
+                }
+                // Create a read-only CSSStyleDeclaration for computed styles
+                const computedStyle = new CSSStyleDeclaration(element);
+                // Make it read-only by overriding setters
+                return new Proxy(computedStyle, {
+                  set() {
+                    return true; // Silently ignore writes to computed styles
+                  },
+                  get(target, prop) {
+                    if (prop === 'setProperty' || prop === 'removeProperty') {
+                      return () => {}; // No-op for computed styles
+                    }
+                    return target[prop];
+                  }
+                });
+              };
           }
           return (this[GLOBALS] && this[GLOBALS][name]) ||
                   globalExports[name] ||
@@ -163,6 +188,34 @@ class Document extends NonElementParentNode {
   }
 
   get isConnected() { return true; }
+
+  /**
+   * @type {StyleSheetList}
+   */
+  get styleSheets() {
+    if (this[STYLE_SHEETS] === null) {
+      this[STYLE_SHEETS] = new StyleSheetList();
+    }
+    
+    // Clear and rebuild the list to ensure it's current
+    this[STYLE_SHEETS].length = 0;
+    
+    // Find all style and link elements in document order
+    let {[NEXT]: next, [END]: end} = this;
+    while (next !== end) {
+      if (next.nodeType === ELEMENT_NODE) {
+        const {localName} = next;
+        if (localName === 'style' && next.sheet) {
+          this[STYLE_SHEETS].push(next.sheet);
+        } else if (localName === 'link' && next.rel === 'stylesheet' && next.sheet) {
+          this[STYLE_SHEETS].push(next.sheet);
+        }
+      }
+      next = next[NEXT];
+    }
+    
+    return this[STYLE_SHEETS];
+  }
 
   /**
    * @protected

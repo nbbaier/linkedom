@@ -55,6 +55,9 @@ const SHEET = Symbol('sheet');
 // used to define start node reference
 const START = Symbol('start');
 
+// used to cache document stylesheets
+const STYLE_SHEETS = Symbol('styleSheets');
+
 // used to define special CSS style attribute
 const STYLE = Symbol('style');
 
@@ -8121,6 +8124,30 @@ let Element$1 = class Element extends ParentNode {
   /* c8 ignore stop */
 };
 
+/**
+ * @implements globalThis.StyleSheetList
+ */
+let StyleSheetList$1 = class StyleSheetList extends NodeList {
+  constructor() {
+    super();
+  }
+
+  /**
+   * @param {number} index
+   * @returns {CSSStyleSheet|null}
+   */
+  item(index) {
+    return this[index] || null;
+  }
+
+  /**
+   * @returns {number}
+   */
+  get length() {
+    return super.length;
+  }
+};
+
 const classNames = new WeakMap;
 
 const handler = {
@@ -8218,6 +8245,10 @@ function ShadowRoot() { illegalConstructor(); }
 setPrototypeOf(ShadowRoot, ShadowRoot$1);
 ShadowRoot.prototype = ShadowRoot$1.prototype;
 
+function StyleSheetList() { illegalConstructor(); }
+setPrototypeOf(StyleSheetList, StyleSheetList$1);
+StyleSheetList.prototype = StyleSheetList$1.prototype;
+
 function Text() { illegalConstructor(); }
 setPrototypeOf(Text, Text$1);
 Text.prototype = Text$1.prototype;
@@ -8237,6 +8268,7 @@ const Facades = {
   Element,
   Node,
   ShadowRoot,
+  StyleSheetList,
   Text,
   SVGElement
 };
@@ -11591,6 +11623,7 @@ const tagName$5 = 'link';
 class HTMLLinkElement extends HTMLElement {
   constructor(ownerDocument, localName = tagName$5) {
     super(ownerDocument, localName);
+    this[SHEET] = null;
   }
 
   /* c8 ignore start */ // copy paste from img.src, already covered
@@ -11598,7 +11631,10 @@ class HTMLLinkElement extends HTMLElement {
   set disabled(value) { booleanAttribute.set(this, 'disabled', value); }
 
   get href() { return stringAttribute.get(this, 'href').trim(); }
-  set href(value) { stringAttribute.set(this, 'href', value); }
+  set href(value) { 
+    stringAttribute.set(this, 'href', value);
+    this[SHEET] = null; // Reset sheet when href changes
+  }
 
   get hreflang() { return stringAttribute.get(this, 'hreflang'); }
   set hreflang(value) { stringAttribute.set(this, 'hreflang', value); }
@@ -11607,10 +11643,31 @@ class HTMLLinkElement extends HTMLElement {
   set media(value) { stringAttribute.set(this, 'media', value); }
 
   get rel() { return stringAttribute.get(this, 'rel'); }
-  set rel(value) { stringAttribute.set(this, 'rel', value); }
+  set rel(value) { 
+    stringAttribute.set(this, 'rel', value);
+    this[SHEET] = null; // Reset sheet when rel changes
+  }
 
   get type() { return stringAttribute.get(this, 'type'); }
   set type(value) { stringAttribute.set(this, 'type', value); }
+
+  /**
+   * @returns {CSSStyleSheet|null}
+   */
+  get sheet() {
+    if (this.rel !== 'stylesheet') {
+      return null;
+    }
+    
+    const sheet = this[SHEET];
+    if (sheet !== null) {
+      return sheet;
+    }
+    
+    // For now, return an empty stylesheet since we can't fetch external resources
+    // In a real implementation, this would fetch and parse the external CSS
+    return this[SHEET] = libExports.parse('');
+  }
   /* c8 ignore stop */
 
 }
@@ -12253,7 +12310,8 @@ const globalExports = assign(
     EventTarget: DOMEventTarget,
     InputEvent,
     NamedNodeMap,
-    NodeList
+    NodeList,
+    StyleSheetList: StyleSheetList$1
   }
 );
 
@@ -12274,6 +12332,7 @@ let Document$1 = class Document extends NonElementParentNode {
     this[GLOBALS] = null;
     this[IMAGE] = null;
     this[UPGRADE] = null;
+    this[STYLE_SHEETS] = null;
   }
 
   /**
@@ -12365,6 +12424,34 @@ let Document$1 = class Document extends NonElementParentNode {
   }
 
   get isConnected() { return true; }
+
+  /**
+   * @type {StyleSheetList}
+   */
+  get styleSheets() {
+    if (this[STYLE_SHEETS] === null) {
+      this[STYLE_SHEETS] = new StyleSheetList$1();
+    }
+    
+    // Clear and rebuild the list to ensure it's current
+    this[STYLE_SHEETS].length = 0;
+    
+    // Find all style and link elements in document order
+    let {[NEXT]: next, [END]: end} = this;
+    while (next !== end) {
+      if (next.nodeType === ELEMENT_NODE) {
+        const {localName} = next;
+        if (localName === 'style' && next.sheet) {
+          this[STYLE_SHEETS].push(next.sheet);
+        } else if (localName === 'link' && next.rel === 'stylesheet' && next.sheet) {
+          this[STYLE_SHEETS].push(next.sheet);
+        }
+      }
+      next = next[NEXT];
+    }
+    
+    return this[STYLE_SHEETS];
+  }
 
   /**
    * @protected
@@ -12760,4 +12847,4 @@ function Document() {
 
 setPrototypeOf(Document, Document$1).prototype = Document$1.prototype;
 
-export { Attr, CDATASection, CharacterData, Comment, CustomEvent, DOMParser, Document, DocumentFragment, DocumentType, Element, GlobalEvent as Event, DOMEventTarget as EventTarget, Facades, HTMLAnchorElement, HTMLAreaElement, HTMLAudioElement, HTMLBRElement, HTMLBaseElement, HTMLBodyElement, HTMLButtonElement, HTMLCanvasElement, HTMLClasses, HTMLDListElement, HTMLDataElement, HTMLDataListElement, HTMLDetailsElement, HTMLDirectoryElement, HTMLDivElement, HTMLElement, HTMLEmbedElement, HTMLFieldSetElement, HTMLFontElement, HTMLFormElement, HTMLFrameElement, HTMLFrameSetElement, HTMLHRElement, HTMLHeadElement, HTMLHeadingElement, HTMLHtmlElement, HTMLIFrameElement, HTMLImageElement, HTMLInputElement, HTMLLIElement, HTMLLabelElement, HTMLLegendElement, HTMLLinkElement, HTMLMapElement, HTMLMarqueeElement, HTMLMediaElement, HTMLMenuElement, HTMLMetaElement, HTMLMeterElement, HTMLModElement, HTMLOListElement, HTMLObjectElement, HTMLOptGroupElement, HTMLOptionElement, HTMLOutputElement, HTMLParagraphElement, HTMLParamElement, HTMLPictureElement, HTMLPreElement, HTMLProgressElement, HTMLQuoteElement, HTMLScriptElement, HTMLSelectElement, HTMLSlotElement, HTMLSourceElement, HTMLSpanElement, HTMLStyleElement, HTMLTableCaptionElement, HTMLTableCellElement, HTMLTableElement, HTMLTableRowElement, HTMLTemplateElement, HTMLTextAreaElement, HTMLTimeElement, HTMLTitleElement, HTMLTrackElement, HTMLUListElement, HTMLUnknownElement, HTMLVideoElement, InputEvent, Node, NodeFilter, NodeList, SVGElement, ShadowRoot, Text, illegalConstructor, parseHTML, parseJSON, toJSON };
+export { Attr, CDATASection, CharacterData, Comment, CustomEvent, DOMParser, Document, DocumentFragment, DocumentType, Element, GlobalEvent as Event, DOMEventTarget as EventTarget, Facades, HTMLAnchorElement, HTMLAreaElement, HTMLAudioElement, HTMLBRElement, HTMLBaseElement, HTMLBodyElement, HTMLButtonElement, HTMLCanvasElement, HTMLClasses, HTMLDListElement, HTMLDataElement, HTMLDataListElement, HTMLDetailsElement, HTMLDirectoryElement, HTMLDivElement, HTMLElement, HTMLEmbedElement, HTMLFieldSetElement, HTMLFontElement, HTMLFormElement, HTMLFrameElement, HTMLFrameSetElement, HTMLHRElement, HTMLHeadElement, HTMLHeadingElement, HTMLHtmlElement, HTMLIFrameElement, HTMLImageElement, HTMLInputElement, HTMLLIElement, HTMLLabelElement, HTMLLegendElement, HTMLLinkElement, HTMLMapElement, HTMLMarqueeElement, HTMLMediaElement, HTMLMenuElement, HTMLMetaElement, HTMLMeterElement, HTMLModElement, HTMLOListElement, HTMLObjectElement, HTMLOptGroupElement, HTMLOptionElement, HTMLOutputElement, HTMLParagraphElement, HTMLParamElement, HTMLPictureElement, HTMLPreElement, HTMLProgressElement, HTMLQuoteElement, HTMLScriptElement, HTMLSelectElement, HTMLSlotElement, HTMLSourceElement, HTMLSpanElement, HTMLStyleElement, HTMLTableCaptionElement, HTMLTableCellElement, HTMLTableElement, HTMLTableRowElement, HTMLTemplateElement, HTMLTextAreaElement, HTMLTimeElement, HTMLTitleElement, HTMLTrackElement, HTMLUListElement, HTMLUnknownElement, HTMLVideoElement, InputEvent, Node, NodeFilter, NodeList, SVGElement, ShadowRoot, StyleSheetList, Text, illegalConstructor, parseHTML, parseJSON, toJSON };

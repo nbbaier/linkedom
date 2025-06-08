@@ -75,6 +75,10 @@ exports.SHEET = SHEET;
 const START = Symbol('start');
 exports.START = START;
 
+// used to cache document stylesheets
+const STYLE_SHEETS = Symbol('styleSheets');
+exports.STYLE_SHEETS = STYLE_SHEETS;
+
 // used to define special CSS style attribute
 const STYLE = Symbol('style');
 exports.STYLE = STYLE;

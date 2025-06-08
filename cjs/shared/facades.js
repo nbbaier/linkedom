@@ -8,6 +8,7 @@ const {DocumentType: _DocumentType} = require('../interface/document-type.js');
 const {Element: _Element} = require('../interface/element.js');
 const {Node: _Node} = require('../interface/node.js');
 const {ShadowRoot: _ShadowRoot} = require('../interface/shadow-root.js');
+const {StyleSheetList: _StyleSheetList} = require('../interface/style-sheet-list.js');
 const {Text: _Text} = require('../interface/text.js');
 const {SVGElement: _SVGElement} = require('../svg/element.js');
 
@@ -64,6 +65,11 @@ exports.ShadowRoot = ShadowRoot
 setPrototypeOf(ShadowRoot, _ShadowRoot);
 ShadowRoot.prototype = _ShadowRoot.prototype;
 
+function StyleSheetList() { illegalConstructor(); }
+exports.StyleSheetList = StyleSheetList
+setPrototypeOf(StyleSheetList, _StyleSheetList);
+StyleSheetList.prototype = _StyleSheetList.prototype;
+
 function Text() { illegalConstructor(); }
 exports.Text = Text
 setPrototypeOf(Text, _Text);
@@ -85,6 +91,7 @@ const Facades = {
   Element,
   Node,
   ShadowRoot,
+  StyleSheetList,
   Text,
   SVGElement
 };

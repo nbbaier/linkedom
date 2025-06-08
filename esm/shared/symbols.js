@@ -55,6 +55,9 @@ export const SHEET = Symbol('sheet');
 // used to define start node reference
 export const START = Symbol('start');
 
+// used to cache document stylesheets
+export const STYLE_SHEETS = Symbol('styleSheets');
+
 // used to define special CSS style attribute
 export const STYLE = Symbol('style');
 

@@ -7,6 +7,7 @@ import {DocumentType as _DocumentType} from '../interface/document-type.js';
 import {Element as _Element} from '../interface/element.js';
 import {Node as _Node} from '../interface/node.js';
 import {ShadowRoot as _ShadowRoot} from '../interface/shadow-root.js';
+import {StyleSheetList as _StyleSheetList} from '../interface/style-sheet-list.js';
 import {Text as _Text} from '../interface/text.js';
 import {SVGElement as _SVGElement} from '../svg/element.js';
 
@@ -53,6 +54,10 @@ export function ShadowRoot() { illegalConstructor(); }
 setPrototypeOf(ShadowRoot, _ShadowRoot);
 ShadowRoot.prototype = _ShadowRoot.prototype;
 
+export function StyleSheetList() { illegalConstructor(); }
+setPrototypeOf(StyleSheetList, _StyleSheetList);
+StyleSheetList.prototype = _StyleSheetList.prototype;
+
 export function Text() { illegalConstructor(); }
 setPrototypeOf(Text, _Text);
 Text.prototype = _Text.prototype;
@@ -72,6 +77,7 @@ export const Facades = {
   Element,
   Node,
   ShadowRoot,
+  StyleSheetList,
   Text,
   SVGElement
 };

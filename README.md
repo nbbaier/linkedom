@@ -1,3 +1,14 @@
+
+Fork that implements `doc.styleSheets` and `getComputedStyle` to make the library play better with [kepano/defuddle](https://github.com/kepano/defuddle). Install with the following:
+
+```bash
+# Run all tests
+npm install nbbaier/linkedom
+yarn add nbbaier/linkedom
+pnpm add nbbaier/linkedom
+bun add nbbaier/linkedom
+```
+
 # 🔗 linkedom
 
 [![Downloads](https://img.shields.io/npm/dm/linkedom.svg)](https://www.npmjs.com/package/linkedom) [![Build Status](https://travis-ci.com/WebReflection/linkedom.svg?branch=main)](https://travis-ci.com/WebReflection/linkedom) [![Coverage Status](https://coveralls.io/repos/github/WebReflection/linkedom/badge.svg?branch=main)](https://coveralls.io/github/WebReflection/linkedom?branch=main)

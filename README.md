@@ -2,10 +2,16 @@
 Fork that implements `doc.styleSheets` and `getComputedStyle` to make the library play better with [kepano/defuddle](https://github.com/kepano/defuddle). Install with the following:
 
 ```bash
-# Run all tests
+# npm
 npm install nbbaier/linkedom
+
+# yarn
 yarn add nbbaier/linkedom
+
+# pnpm
 pnpm add nbbaier/linkedom
+
+# bun
 bun add nbbaier/linkedom
 ```
 

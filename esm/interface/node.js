@@ -184,7 +184,7 @@ export class Node extends EventTarget {
   }
 
   /**
-   * @protected
+   * @public
    */
   _getParent() {
     return this.parentNode;

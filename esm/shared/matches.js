@@ -97,6 +97,7 @@ const adapter = {
   findOne
 };
 
+/** @returns {any} */
 export const prepareMatch = (element, selectors) => CSSselect.compile(
   selectors,
   {

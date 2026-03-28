@@ -120,22 +120,22 @@ export class MutationObserverClass {
 
       constructor(callback) {
         /**
-         * @private
+         * @public
          */
         this.callback = callback;
 
         /**
-         * @private
+         * @public
          */
         this.nodes = new Map;
 
         /**
-         * @private
+         * @public
          */
         this.records = [];
 
         /**
-         * @private
+         * @public
          */
         this.scheduled = false;
       }

@@ -30,7 +30,9 @@ export const parentElement = ({parentNode}) => {
   return parentNode;
 };
 
-export const previousSibling = ({[PREV]: prev}) => {
+/** @returns {Node | null} */
+export const previousSibling = (node) => {
+  const prev = node[PREV];
   switch (prev ? prev.nodeType : 0) {
     case NODE_END:
       return prev[START];

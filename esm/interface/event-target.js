@@ -45,7 +45,7 @@ class DOMEventTarget {
   }
 
   /**
-   * @protected
+   * @public
    */
   _getParent() {
     return null;
